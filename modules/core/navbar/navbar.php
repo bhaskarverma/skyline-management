@@ -37,9 +37,17 @@
         </div>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#" role="button">
+        <a class="nav-link" href="#" onclick="logoff()" role="button">
           <i class="fa fa-power-off"></i></a>
       </li>
     </ul>
   </nav>
   <!-- /.navbar -->
+  <script>
+
+    function logoff()
+    {
+      window.location = "/modules/core/user_management/user_logout.php";
+    }
+
+  </script>
