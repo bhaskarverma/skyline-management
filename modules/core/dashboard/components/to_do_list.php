@@ -194,7 +194,53 @@ function updateTodo(id, val_td, val_t)
 
 function markComplete(checkbox)
 {
-  swal.fire(checkbox.id);
-}
+  var swalHTML = '<input type="hidden" id="mark-complete-modal" value="'+checkbox.id+'">';
+  Swal.fire({
+      title: 'Complete TODO',
+      html: swalHTML,
+      inputAttributes: {
+        autocapitalize: 'off'
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Add',
+      showLoaderOnConfirm: true,
+      preConfirm: function() {
+            return new Promise((resolve, reject) => {
+                // get your inputs using their placeholder or maybe add IDs to them
+                resolve({
+                    mark_complete_id: $('#mark-complete-modal').val()
+                });
 
+                // maybe also reject() on some condition
+            });
+      },
+      allowOutsideClick: () => !Swal.isLoading()
+  }).then((data) => {
+      return fetch('/modules/core/to_do_list/complete_todo.php', {
+          method: 'post',
+          headers: {
+            "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+          },
+          body: 'mark='+data.value.mark_complete_id
+        }).then(response => {
+          if(!response.ok)
+          {
+            throw new Error(response.statusText)
+          }
+          return response.json()
+        })
+        .catch(error => {
+          Swal.showValidationMessage(
+              `Request Failed: ${error}`
+            )
+        })
+  })
+  .then((result) => {
+     Swal.fire(
+        'Request Completed',
+          result.res,
+          'success'
+      )
+  });
+}
 </script>
