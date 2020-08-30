@@ -1798,7 +1798,7 @@ div[data-role="editor-toolbar"] {
 
 .breadcrumb li i {
 
-  font-size: 15px;
+  Font-size: 15px;
 
   margin-right: 5px;
 
@@ -2442,6 +2442,7 @@ div[data-role="editor-toolbar"] {
 
 }
 
+}
 
 .panel.panel-default.panel-heading {
 
@@ -3055,7 +3056,7 @@ div[data-role="editor-toolbar"] {
 
 }
 
-/* Widget-Content */
+* /Widget-Content */
 
 
 
@@ -3411,7 +3412,7 @@ div[data-role="editor-toolbar"] {
 
 /*-----	map-----*/
 
-/* Google maps */
+* Google maps */
 
 
 
@@ -3721,7 +3722,7 @@ div[data-role="editor-toolbar"] {
 
     font-weight: 300;
 
-    /* font-weight: 30px; */
+    font-weight: 30px;
 
 }
 
