@@ -1,5 +1,5 @@
 <?php
-var_dump($_SESSION);
+
 //Nav Sidebar list HTML
 $type_single_name_start_to_link =  '<li class="nav-item"><a href="';
 $type_single_name_link_continued = '" class="nav-link"><i class="nav-icon fas fa-th"></i><p>';
@@ -117,7 +117,7 @@ if(!empty($modules_not_in_fs))
               {
                 continue;
               }
-              if(in_array($module,$_SESSION['user_access']) || $_SESSION['gid'] == 1 || $_SESSION['gid'] == 2)
+              if(in_array($module,$_SESSION['user_access']) || $_SESSION['user_data']['gid'] == 1 || $_SESSION['user_data']['gid'] == 2)
               {
                 $module_details = include 'modules/'.$module.'/manifest.php';
 
