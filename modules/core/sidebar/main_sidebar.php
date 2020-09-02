@@ -1,5 +1,5 @@
 <?php
-
+print_r($_SESSION)
 //Nav Sidebar list HTML
 $type_single_name_start_to_link =  '<li class="nav-item"><a href="';
 $type_single_name_link_continued = '" class="nav-link"><i class="nav-icon fas fa-th"></i><p>';
