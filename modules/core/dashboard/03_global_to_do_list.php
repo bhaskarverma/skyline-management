@@ -4,7 +4,7 @@ require('components/to_do_list.php');
 
 $pdo = new PDO($dsn, $user, $pass, $options);
 
-$sql = $pdo->prepare("SELECT * FROM `global_todo` WHERE `is_completed` = false");
+$sql = $pdo->prepare("SELECT * FROM `global_todo` WHERE `is_completed` = false OR DATE(`completed_on`) = CURDATE()");
 $sql->execute();
 $todo = $sql->fetchAll();
 
@@ -105,7 +105,14 @@ for($i=0;$i<count($todo);$i++)
 		$attach = '';
 	}
 
-	$list->addItem('toDo-item-'.$todo[$i]['item_id'], $todo[$i]['text'], $color, $remain.$attach);
+	$isCompleted = false;
+
+	if($todo[$i]['is_completed'])
+	{
+		$isCompleted = true;
+	}
+
+	$list->addItem('toDo-item-'.$todo[$i]['item_id'], $todo[$i]['text'], $color, $remain.$attach,$isCompleted);
 }
 
 echo $list->getHTML();

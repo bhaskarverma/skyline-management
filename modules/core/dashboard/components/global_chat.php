@@ -123,3 +123,25 @@ class GlobalChat {
 
 ?>
 
+<script>
+
+function sendMessage()
+{
+  var messageText = $("#global-chat-send-msg-box").val();
+  var sender = "{{user-id}}";
+
+  $.ajax({
+          type: "POST",
+          url: "/modules/core/global_chat/send_message.php",
+          data: {
+            messageText : messageText,
+            sender : sender
+          },
+          success: function(data){
+             location.reload();
+          },
+          dataType: "String"
+        });
+}
+
+</script>

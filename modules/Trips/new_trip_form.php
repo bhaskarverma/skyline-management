@@ -1,10 +1,10 @@
 <?php
 
 $trip_id = $_GET['trip_id'];
+$pdo = new PDO($dsn, $user, $pass, $options);
 
 if($trip_id != "new")
 {
-  $pdo = new PDO($dsn, $user, $pass, $options);
   $sql = $pdo->prepare("SELECT round_trip_id FROM trip_round_trip_xref WHERE trip_id = ?");
   $sql->execute([$trip_id]);
   $round_trip_id = $sql->fetch()['round_trip_id'];
@@ -13,6 +13,11 @@ else
 {
   $round_trip_id = "new";
 }
+
+$sql = $pdo->prepare("SELECT `vehicle_no` FROM `vehicles`");
+$sql->execute();
+$vehicles = $sql->fetchAll();
+
 ?>
 
  <!-- Main content -->
@@ -62,7 +67,15 @@ else
         <div class="col-lg-6">
           <div class="form-group">
             <label for="vehicle">Vehicle</label>
-            <input type="text" class="form-control" id="vehicle" name="vehicle" placeholder="Vehicle">
+            <select name="workgroup" class="form-control" id="vehicle" name="vehicle" data-placeholder="Select a Workgroup" style="width: 100%;">
+            <option></option>
+            <?php
+                  for($i=0; $i<count($vehicles); $i++)
+                  {
+                    echo '<option value="'.$vehicles[$i]['vehicle_no'].'">'.$vehicles[$i]['vehicle_no'].'</option>';
+                  }
+            ?>
+      </select>
           </div>
         </div>
       </div>
@@ -128,6 +141,10 @@ else
 </div>
 <!-- /.card -->
 <script>
+  $(function () {
+    $('#vehicle').select2();
+  })
+
   $("#fuel_ltr").on("keyup", function() {
     var fuel_ltr = $("#fuel_ltr").val();
 

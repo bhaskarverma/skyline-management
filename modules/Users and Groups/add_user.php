@@ -34,7 +34,7 @@ $res = $sql->fetchAll();
       </div>
       <div class="form-group">
       <label>Work Group</label>
-      <select name="workgroup" class="select2" data-placeholder="Select a Workgroup" style="width: 100%;">
+      <select name="workgroup" id="select2-adduser" data-placeholder="Select a Workgroup" style="width: 100%;">
         <option></option>
         <?php
               for($i=0; $i<count($res); $i++)
@@ -55,7 +55,7 @@ $res = $sql->fetchAll();
 <!-- /.card -->
 <script>
   $(function () {
-    $('.select2').select2();
+    $('#select2-adduser').select2();
   })
 
   function generateUsername()

@@ -23,7 +23,7 @@ class ToDoList {
 
   private $list_item_raw = '<li>
                               <div class="icheck-primary d-inline ml-2">
-                                <input onclick=markComplete(this) type="checkbox" value="" name="todo1" id="{{to-do-item-id}}">
+                                <input onclick=markComplete(this) type="checkbox" value="" name="todo1" id="{{to-do-item-id}}" {{isChecked}} {{isDisabled}}>
                                 <label for="{{to-do-item-id}}"></label>
                               </div>
                               <span class="text">{{to-do-text}}</span>
@@ -43,24 +43,39 @@ class ToDoList {
   private $text;
   private $badge;
   private $time_remaining;
+  private $isChecked;
+  private $isDisabled;
 
   public function __construct()
   {
     $this->complete_html = $this->card_start.$this->card_header.$this->card_body_start.$this->list_start;
   }
 
-  public function addItem($item_id, $text, $badge, $time_remaining)
+  public function addItem($item_id, $text, $badge, $time_remaining, $isCompleted)
   {
-    $this->setValues($item_id, $text, $badge, $time_remaining);
+    if($isCompleted)
+    {
+      $isChecked = 'checked';
+      $isDisabled = 'disabled=disabled';
+    }
+    else
+    {
+      $isChecked = '';
+      $isDisabled = '';
+    }
+
+    $this->setValues($item_id, $text, $badge, $time_remaining, $isChecked, $isDisabled);
     $this->generateItem();
   }
 
-  private function setValues($item_id, $text, $badge, $time_remaining)
+  private function setValues($item_id, $text, $badge, $time_remaining, $isChecked, $isDisabled)
   {
     $this->item_id = $item_id;
     $this->text = $text;
     $this->badge = $badge;
     $this->time_remaining = $time_remaining;
+    $this->isChecked = $isChecked;
+    $this->isDisabled = $isDisabled;
   }
 
   private function generateItem()
@@ -70,6 +85,8 @@ class ToDoList {
     $raw_html = str_replace("{{to-do-text}}", $this->text, $raw_html);
     $raw_html = str_replace("{{badge-type}}", $this->badge, $raw_html);
     $raw_html = str_replace("{{time-remaining}}", $this->time_remaining, $raw_html);
+    $raw_html = str_replace("{{isChecked}}", $this->isChecked, $raw_html);
+    $raw_html = str_replace("{{isDisabled}}", $this->isDisabled, $raw_html);
     $this->complete_html .= $raw_html;
   }
 
@@ -202,7 +219,7 @@ function markComplete(checkbox)
         autocapitalize: 'off'
       },
       showCancelButton: true,
-      confirmButtonText: 'Add',
+      confirmButtonText: 'Confirm Complete',
       showLoaderOnConfirm: true,
       preConfirm: function() {
             return new Promise((resolve, reject) => {
