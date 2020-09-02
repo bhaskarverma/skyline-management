@@ -49,7 +49,7 @@ for($i=0; $i<count($modules_in_db); $i++)
   array_push($modules, $modules_in_db[$i]);
 }
 
-var_dump($modules_in_db);
+var_dump($modules);
 
 //Checking for Difference in Module Lists
 $modules_not_in_db = array(); //Array to contain the list of Recently Added Modules
