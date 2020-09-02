@@ -41,8 +41,6 @@ for($i=0; $i<count($modules_in_db); $i++)
 
 $modules_in_db = $tmp_mid;
 unset($tmp_mid);
-echo "Modules in DB";
-print_r($modules_in_db);
 
 //Creating Common Modules Var to Populate Values
 $modules = array();
@@ -119,7 +117,7 @@ if(!empty($modules_not_in_fs))
               {
                 continue;
               }
-              if(in_array($module,$_SESSION['user_access']))
+              if(in_array($module,$_SESSION['user_access']) || $_SESSION['gid'] == 1 || $_SESSION['gid'] == 2)
               {
                 $module_details = include 'modules/'.$module.'/manifest.php';
 
