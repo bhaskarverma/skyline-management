@@ -1,5 +1,5 @@
 <?php
-print_r($_SESSION);
+
 //Nav Sidebar list HTML
 $type_single_name_start_to_link =  '<li class="nav-item"><a href="';
 $type_single_name_link_continued = '" class="nav-link"><i class="nav-icon fas fa-th"></i><p>';
@@ -48,6 +48,8 @@ for($i=0; $i<count($modules_in_db); $i++)
 {
   array_push($modules, $modules_in_db[$i]);
 }
+
+var_dump($modules);
 
 //Checking for Difference in Module Lists
 $modules_not_in_db = array(); //Array to contain the list of Recently Added Modules
