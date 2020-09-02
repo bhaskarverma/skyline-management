@@ -42,6 +42,8 @@ for($i=0; $i<count($modules_in_db); $i++)
 $modules_in_db = $tmp_mid;
 unset($tmp_mid);
 
+print_r($modules_in_db);
+
 //Creating Common Modules Var to Populate Values
 $modules = array();
 for($i=0; $i<count($modules_in_db); $i++)
