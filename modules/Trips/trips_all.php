@@ -4,7 +4,8 @@ $pdo = new PDO($dsn, $user, $pass, $options);
 $sql = $pdo->query("SELECT round_trip_id FROM round_trip WHERE on_road = true");
 $all_on_road_round_trips = $sql->fetchAll();
 
-$res = array();
+$res_on_road = array();
+$res_ready = array();
 
 foreach($all_on_road_round_trips AS $trip)
 {
@@ -14,29 +15,41 @@ foreach($all_on_road_round_trips AS $trip)
 
     $sql = $pdo->prepare("SELECT * FROM trips WHERE trip_id = ?");
     $sql->execute([$trip_id]);
-    array_push($res,$sql->fetch());
+    $tmp = $sql->fetch();
+    if($tmp['trip_end'] == '0000-00-00')
+    {
+      array_push($res_on_road,$tmp);
+    }
+    else
+    {
+      array_push($res_ready,$tmp);
+    }
 }
 
-function anyBreakdown($res)
+function isBreakdown($vehicle)
 {
-    for($i=0; $i<count($res); $i++)
-    {
-        if($res[$i]['breakdown'] == 1)
-        {
-            return true;
-        }
-    }
+    global $pdo;
+    $sql = $pdo->prepare("SELECT `breakdown` FROM `vehicles` WHERE `vehicle_no` = ?");
+    $sql->execute([$vehicle]);
+    $res = $sql->fetch();
 
-    return false;
+    if($res['breakdown'])
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
 }
 
 ?>
 
 <!-- Card -->
-<a href="<?php echo '?module=Trips&page=Trip Select' ?>" type="button" class="btn btn-primary mb-3 ml-1">Start Trip</a>
+<a href="<?php echo '/?module=Trips&page=Trip New&trip_id=new' ?>" type="button" class="btn btn-primary mb-3 ml-1">Start New Trip</a>
 <div class="card">
   <div class="card-header">
-    <h3 class="card-title">Vehicles</h3>
+    <h3 class="card-title">Trips On-Route</h3>
   </div>
   <!-- /.card-header -->
   <div class="card-body">
@@ -55,16 +68,28 @@ function anyBreakdown($res)
       <tbody>
         <?php
 
-                for($i=0;$i<count($res);$i++)
+                for($i=0;$i<count($res_on_road);$i++)
                 {
                     echo '<tr>';   
-                    echo '<td>'.$res[$i]['vehicle'].'</td>'; 
-                    echo '<td>'.$res[$i]['driver'].'</td>';
-                    echo '<td>'.$res[$i]['trip_from'].'</td>';
-                    echo '<td>'.$res[$i]['trip_to'].'</td>';
-                    echo '<td>'.$res[$i]['trip_start'].'</td>';
-                    echo '<td>'.$res[$i]['current_status'].'</td>';
-                    echo '<td><a href="#" data-toggle="modal" data-target="#updateModal" data-trip='.$res[$i]['trip_id'].' data-vehicle='.$res[$i]['vehicle'].' type="button" class="btn btn-primary">Update</a><a href="#" data-toggle="modal" data-target="#endTripModal" data-vehicle='.$res[$i]['vehicle'].' data-trip='.$res[$i]['trip_id'].' type="button" class="ml-3 btn btn-primary">End Trip</a></td>';
+                    echo '<td>'.$res_on_road[$i]['vehicle'].'</td>'; 
+                    echo '<td>'.$res_on_road[$i]['driver'].'</td>';
+                    echo '<td>'.$res_on_road[$i]['trip_from'].'</td>';
+                    echo '<td>'.$res_on_road[$i]['trip_to'].'</td>';
+                    echo '<td>'.$res_on_road[$i]['trip_start'].'</td>';
+                    if(isBreakdown($res_on_road[$i]['vehicle']))
+                    {
+                      echo '<td>Breakdown</td>';
+                    }
+                    else
+                    {
+                      echo '<td>'.$res_on_road[$i]['current_status'].'</td>';
+                    }                
+                    echo '<td><a href="#" onclick="add_fuel('.$res_on_road[$i]['trip_id'].')" type="button" class="btn btn-primary">Add Fuel</a>';
+                    if(!isBreakdown($res_on_road[$i]['vehicle']))
+                    {
+                      echo '<a href="#" onclick=\'update_status("'.$res_on_road[$i]['trip_id'].'")\' type="button" class="ml-3 btn btn-primary">Update Status</a><a href="#" onclick=\'endT("'.$res_on_road[$i]['trip_id'].'","'.strtoupper($res_on_road[$i]['trip_to']).'")\' type="button" class="ml-3 btn btn-primary">End Trip</a>';
+                    }
+                    echo '</td>';
                     echo '</tr>';
                 }
                 ?>
@@ -73,116 +98,309 @@ function anyBreakdown($res)
   </div>
   <!-- /.card-body -->
 <!-- /.card -->
-<!-- Modals -->
-<div id="updateModal" class="modal pg-show-modal fade">
-    <div class="modal-dialog-centered modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 id="modal_title" class="modal-title">Update Trip</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
-            </div>
-            <div class="modal-body">
-              <div class="row">
-                <div class="col-md-6">
-                  <label for="driver" class="form-group">Driver</label>
-                  <input type="text" class="form-control" id="driver">
-                  <div class="form-group"> 
-                      <label for="status">Status</label>
-                      <select class="form-control" id="status">
-                          <option value=""></option>
-                          <option value="Status 1">Status 1</option>
-                          <option value="Status 2">Status 2</option>
-                          <option value="Status 3">Status 3</option>
-                          <option value="Status 4">Status 4</option>
-                      </select> 
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <label for="fuel_ltr" class="form-group">Fuel (Ltr)</label>
-                  <input type="text" class="form-control" id="fuel_ltr" value="0">
-                  <label for="fuel_money" class="form-group">Fuel (Money)</label>
-                  <input type="text" class="form-control" id="fuel_money" value="0">
-                  <input type="hidden" id="trip_id" value="">
-                </div>
-            </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button onclick="updateTrip()" type="button" class="btn btn-primary">Update</button>
-            </div>
-        </div>
-    </div>
 </div>
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Vehicles Ready for Next Trip</h3>
+  </div>
+  <!-- /.card-header -->
+  <div class="card-body">
+    <table id="vehicle_ready_tbl" class="table table-bordered">
+      <thead>                  
+        <tr>
+          <th>Vehicle No.</th> 
+          <th>Driver</th>
+          <th>From</th> 
+          <th>To</th> 
+          <th>Start Date</th>
+          <th>Current Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php
 
-<div id="endTripModal" class="modal pg-show-modal fade">
-    <div class="modal-dialog-centered modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 id="end_modal_title" class="modal-title">End Trip</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
-            </div>
-            <div class="modal-body">
-              <label for="km_end" class="form-group">KM End</label>
-              <input type="text" class="form-control" id="km_end">
-              <input type="hidden" id="end_trip_id" value="">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button onclick="endTrip()" type="button" class="btn btn-primary">End Trip</button>
-            </div>
-        </div>
-    </div>
+                for($i=0;$i<count($res_ready);$i++)
+                {
+                    echo '<tr>';   
+                    echo '<td>'.$res_ready[$i]['vehicle'].'</td>'; 
+                    echo '<td>'.$res_ready[$i]['driver'].'</td>';
+                    echo '<td>'.$res_ready[$i]['trip_from'].'</td>';
+                    echo '<td>'.$res_ready[$i]['trip_to'].'</td>';
+                    echo '<td>'.$res_ready[$i]['trip_start'].'</td>';
+                    if(isBreakdown($res_ready[$i]['vehicle']))
+                    {
+                      echo '<td>Breakdown</td>';
+                    }
+                    else
+                    {
+                      echo '<td>'.$res_ready[$i]['current_status'].'</td>';
+                    }  
+                    echo '<td><a href="#" onclick=\'continue_trip("'.$res_ready[$i]['trip_id'].'")\' type="button" class="btn btn-primary">Continue Trip</a></td>';
+                    echo '</tr>';
+                }
+                ?>
+      </tbody>
+    </table>
+  </div>
+  <!-- /.card-body -->
+<!-- /.card -->
 </div>
-
 <!-- Scripts -->
 <script>
 
-  function updateTrip()
+  function continue_trip(trip_id)
   {
-    var trip_id = $("#trip_id").val();
-    var driver = $("#driver").val();
-    var status = $("#status").val();
-    var fuel_ltr = $("#fuel_ltr").val();
-    var fuel_money = $("#fuel_money").val();
-
-    $.ajax({
-          type: "POST",
-          url: "/modules/Trips/update_trip.php",
-          data: {
-            trip_id : trip_id,
-            driver : driver,
-            status : status,
-            fuel_ltr : fuel_ltr,
-            fuel_money : fuel_money
-          },
-          success: function(data){
-             location.reload();
-          },
-          dataType: "String"
-        });
+    window.location = "/?module=Trips&page=Trip New&trip_id=" + trip_id
   }
 
-  function endTrip()
+  function update_status(trip_id)
   {
-    var trip_id = $("#end_trip_id").val();
-    var km_end = $("#km_end").val();
+    (async () => {
 
-    $.ajax({
-          type: "POST",
-          url: "/modules/Trips/end_trip.php",
-          data: {
-            trip_id : trip_id,
-            km_end : km_end
+      const { value: formValues } = await Swal.fire({
+        title: 'Update Status',
+        html:
+          'Status' +
+            '<select class="form-control swal2-input" id="status_upd">'+
+                '<option value=""></option>'+
+                '<option value="Empty">Empty</option>'+
+                '<option value="Sent for Loading">Sent for Loading</option>'+
+                '<option value="Papers Received">Papers Received</option>'+
+                '<option value="Diesel and Advance Received">Diesel and Advance Received</option>'+
+                '<option value="Departed">Departed</option>'+
+                '<option value="Waiting for Diesel / Cash">Waiting for Diesel / Cash</option>'+
+                '<option value="Reached Destination">Reached Destination</option>'+
+                '<option value="Papers Submitted">Papers Submitted</option>'+
+                '<option value="Sample Taken">Sample Taken</option>'+
+                '<option value="Waiting for Unload">Waiting for Unload</option>'+
+                '<option value="Unloading Started">Unloading Started</option>'+
+                '<option value="Unloaded">Unloaded</option>'+
+                '<option value="Receiving Received">Receiving Received</option>'+
+            '</select>',
+        focusConfirm: false,
+        preConfirm: () => {
+          return [
+            document.getElementById('status_upd').value
+          ]
+        }
+      })
+
+      if (formValues) {
+        console.log(formValues);
+        fetch("/modules/Trips/update_trip_status.php" , {
+          method: 'post',
+          headers: {
+            "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"
           },
-          success: function(data){
-             location.reload();
+          body: 'status='+formValues[0]+'&trip_id='+trip_id
+        })
+        .then(
+            function(response)
+            {
+              if(response.status !== 200)
+              {
+                Swal.fire("Error Connecting to Server.");
+                return;
+              }
+
+              response.json().then(
+                  function(data)
+                  {
+                    Swal.fire(data.result);
+                  }
+                )
+            }
+          )
+          .catch(function(err) {
+            Swal.fire("Unable to Connect to Server");
+          })
+      }
+
+      })()
+  }
+
+  function add_fuel(trip_id)
+  {
+    (async () => {
+
+      const { value: formValues } = await Swal.fire({
+        title: 'Add Fuel',
+        html:
+          'Fuel Ltr' +
+          '<input type="number" id="fuel_ltr_add" style="display: flex" class="swal2-input">' +
+          'Fuel Money' +
+          '<input type="number" id="fuel_money_add" style="display: flex" class="swal2-input">',
+        focusConfirm: false,
+        preConfirm: () => {
+          return [
+            document.getElementById('fuel_ltr_add').value,
+            document.getElementById('fuel_money_add').value
+          ]
+        }
+      })
+
+      if (formValues) {
+        console.log(formValues);
+        fetch("/modules/Trips/add_fuel_to_trip.php" , {
+          method: 'post',
+          headers: {
+            "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"
           },
-          dataType: "String"
-        });
+          body: 'fuel_ltr='+formValues[0]+'&fuel_money='+formValues[1]+'&trip_id='+trip_id
+        })
+        .then(
+            function(response)
+            {
+              if(response.status !== 200)
+              {
+                Swal.fire("Error Connecting to Server.");
+                return;
+              }
+
+              response.json().then(
+                  function(data)
+                  {
+                    Swal.fire(data.result);
+                  }
+                )
+            }
+          )
+          .catch(function(err) {
+            Swal.fire("Unable to Connect to Server");
+          })
+      }
+
+      })()
+  }
+
+  function endRTrip(trip_id)
+  {
+    (async () => {
+
+      const { value: formValues } = await Swal.fire({
+        title: 'End Trip',
+        html:
+          'END KM' +
+            '<input type="number" id="end_km" style="display: flex" class="swal2-input" >'+
+          'Trip Expense' +
+            '<input type="number" id="trip_expense" style="display: flex" class="swal2-input" >'+
+          'Receiving Quantity' +
+            '<input type="number" id="rec_quantity" style="display: flex" class="swal2-input" >'+
+          'Penalty' +
+            '<input type="number" id="penalty" style="display: flex" class="swal2-input" >',
+        focusConfirm: false,
+        preConfirm: () => {
+          return [
+            document.getElementById('end_km').value,
+            document.getElementById('trip_expense').value,
+            document.getElementById('rec_quantity').value,
+            document.getElementById('penalty').value
+          ]
+        }
+      })
+
+      if (formValues) {
+        console.log(formValues);
+        fetch("/modules/Trips/end_trip.php" , {
+          method: 'post',
+          headers: {
+            "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+          },
+          body: 'km_end='+formValues[0]+'&trip_expense='+formValues[1]+'&rec_quantity='+formValues[2]+'&penalty='+formValues[3]+'&trip_id='+trip_id
+        })
+        .then(
+            function(response)
+            {
+              if(response.status !== 200)
+              {
+                Swal.fire("Error Connecting to Server.");
+                return;
+              }
+
+              response.json().then(
+                  function(data)
+                  {
+                    Swal.fire(data.result);
+                  }
+                )
+            }
+          )
+          .catch(function(err) {
+            Swal.fire("Unable to Connect to Server");
+          })
+      }
+
+      })()
+  }
+
+  function endTrip(trip_id)
+  {
+    (async () => {
+
+      const { value: formValues } = await Swal.fire({
+        title: 'End Trip',
+        html:
+          'Trip Expense' +
+            '<input type="number" id="trip_expense" style="display: flex" class="swal2-input" >'+
+          'Receiving Quantity' +
+            '<input type="number" id="rec_quantity" style="display: flex" class="swal2-input" >'+
+          'Penalty' +
+            '<input type="number" id="penalty" style="display: flex" class="swal2-input" >',
+        focusConfirm: false,
+        preConfirm: () => {
+          return [
+            document.getElementById('trip_expense').value,
+            document.getElementById('rec_quantity').value,
+            document.getElementById('penalty').value
+          ]
+        }
+      })
+
+      if (formValues) {
+        console.log(formValues);
+        fetch("/modules/Trips/end_trip.php" , {
+          method: 'post',
+          headers: {
+            "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+          },
+          body: 'km_end=NA&trip_expense='+formValues[1]+'&rec_quantity='+formValues[2]+'&penalty='+formValues[3]+'&trip_id='+trip_id
+        })
+        .then(
+            function(response)
+            {
+              if(response.status !== 200)
+              {
+                Swal.fire("Error Connecting to Server.");
+                return;
+              }
+
+              response.json().then(
+                  function(data)
+                  {
+                    Swal.fire(data.result);
+                  }
+                )
+            }
+          )
+          .catch(function(err) {
+            Swal.fire("Unable to Connect to Server");
+          })
+      }
+
+      })()
+  }
+
+  function endT(trip_id,trip_to)
+  {
+    if(trip_to == "RAIPUR")
+    {
+      endRTrip(trip_id);
+    }
+    else
+    {
+      endTrip(trip_to);
+    }
   }
 
   $(function () {
@@ -192,44 +410,11 @@ function anyBreakdown($res)
     });
   });
 
-  $('#updateModal').on('show.bs.modal', function (event) {
-    var button = $(event.relatedTarget);
-    var vehicle_no = button.data('vehicle');
-    var trip_id = button.data('trip');
-    var modal = $(this);
-    modal.find('#modal_title').html("Update Trip for " + vehicle_no);
-    modal.find('#trip_id').val(trip_id);
-  });
-
-  $('#endTripModal').on('show.bs.modal', function (event) {
-    var button = $(event.relatedTarget);
-    var vehicle_no = button.data('vehicle');
-    var trip_id = button.data('trip');
-    var modal = $(this);
-    modal.find('#end_modal_title').html("End Trip for " + vehicle_no);
-    modal.find('#end_trip_id').val(trip_id);
-  });
-
-  $("#fuel_ltr").on("keyup", function() {
-    var fuel_ltr = $("#fuel_ltr").val();
-
-    if(!$.isNumeric(fuel_ltr))
-    {
-      alert("Please Enter Only Integers as Fuel (Ltr)");
-      $("#fuel_ltr").val("0");
-      return;
-    }          
-  });
-
-  $("#fuel_money").on("keyup", function() {
-    var fuel_money = $("#fuel_money").val();
-
-    if(!$.isNumeric(fuel_money))
-    {
-      alert("Please Enter Only Integers as Fuel (Money)");
-      $("#fuel_money").val("0");
-      return;
-    }          
+  $(function () {
+    $("#vehicle_ready_tbl").DataTable({
+      "responsive": true,
+      "autoWidth": false,
+    });
   });
 
 </script>

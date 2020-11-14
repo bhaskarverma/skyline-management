@@ -3,6 +3,26 @@
 //Starting or Resuming Session 
 session_start();
 
+
+//Checking for Session Expiration
+if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 60 * 10)) {
+    // last request was more than 10 minutes ago
+    session_unset();     // unset $_SESSION variable for the run-time 
+    session_destroy();   // destroy session data in storage
+}
+
+$_SESSION['LAST_ACTIVITY'] = time(); // update last activity time stamp
+
+
+//Regenerating Session ID after every 10 minute
+if (!isset($_SESSION['CREATED'])) {
+    $_SESSION['CREATED'] = time();
+} else if (time() - $_SESSION['CREATED'] > 60 * 30) {
+    // session started more than 30 minutes ago
+    session_regenerate_id(true);    // change session ID for the current session and invalidate old session ID
+    $_SESSION['CREATED'] = time();  // update creation time
+}
+
 //Default Timezone
 date_default_timezone_set("Asia/Calcutta");
 
@@ -30,6 +50,7 @@ $page_global = isset($_GET['page'])?$_GET['page']:'';
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta http-equiv="refresh" content="1800"/>
 
   <title>Dashboard | Skyline</title>
 
@@ -74,6 +95,9 @@ $page_global = isset($_GET['page'])?$_GET['page']:'';
   <script>
     $.widget.bridge('uibutton', $.ui.button)
   </script>
+  <!-- Switch Style Checkbox -->
+  <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/css/bootstrap4-toggle.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>
 	<!-- Bootstrap -->
 	<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
   <!-- ChartJS -->
@@ -113,6 +137,10 @@ $page_global = isset($_GET['page'])?$_GET['page']:'';
   <script src="/plugins/sweetalert2/sweetalert2.all.min.js"></script>
 	<!-- AdminLTE -->
 	<script src="/dist/js/adminlte.js"></script>
+  <style>
+    .toggle.ios, .toggle-on.ios, .toggle-off.ios { border-radius: 20rem; }
+    .toggle.ios .toggle-handle { border-radius: 20rem; }
+  </style>
 </head>
 <!--
 BODY TAG OPTIONS:

@@ -14,9 +14,17 @@ else
   $round_trip_id = "new";
 }
 
+$sql = $pdo->prepare("SELECT * FROM `employees` WHERE `role` = 'DRIVER'");
+$sql->execute();
+$drivers = $sql->fetchAll();
+
 $sql = $pdo->prepare("SELECT `vehicle_no` FROM `vehicles`");
 $sql->execute();
 $vehicles = $sql->fetchAll();
+
+$sql = $pdo->prepare("SELECT `party_name`, `party_id` FROM `party_details`");
+$sql->execute();
+$party_details = $sql->fetchAll();
 
 ?>
 
@@ -67,7 +75,7 @@ $vehicles = $sql->fetchAll();
         <div class="col-lg-6">
           <div class="form-group">
             <label for="vehicle">Vehicle</label>
-            <select name="workgroup" class="form-control" id="vehicle" name="vehicle" data-placeholder="Select a Workgroup" style="width: 100%;">
+            <select class="form-control" id="vehicle" name="vehicle" data-placeholder="Select a Vehicle" style="width: 100%;">
             <option></option>
             <?php
                   for($i=0; $i<count($vehicles); $i++)
@@ -75,7 +83,7 @@ $vehicles = $sql->fetchAll();
                     echo '<option value="'.$vehicles[$i]['vehicle_no'].'">'.$vehicles[$i]['vehicle_no'].'</option>';
                   }
             ?>
-      </select>
+            </select>
           </div>
         </div>
       </div>
@@ -83,13 +91,21 @@ $vehicles = $sql->fetchAll();
         <div class="col-lg-6">
           <div class="form-group">
             <label for="driver">Driver</label>
-            <input type="text" class="form-control" id="driver" name="driver" placeholder="Driver">
+              <select name="driver" class="form-control" id="driver" data-placeholder="Select a Driver" style="width: 100%;">
+                  <option></option>
+                  <?php
+                  for($i=0; $i<count($drivers); $i++)
+                  {
+                      echo '<option value="'.$drivers[$i]['emp_name'].'">'.$drivers[$i]['emp_name'].'</option>';
+                  }
+                  ?>
+              </select>
           </div>
         </div>
         <div class="col-lg-6">
           <div class="form-group">
             <label for="quantity">Material Quantity</label>
-            <input type="text" class="form-control" id="quantity" name="quantity" placeholder="Material Quantity">
+            <input type="number" class="form-control" id="quantity" name="quantity" placeholder="Material Quantity">
           </div>
         </div>
       </div>
@@ -97,13 +113,13 @@ $vehicles = $sql->fetchAll();
         <div class="col-lg-6">
           <div class="form-group">
             <label for="rate">Rate</label>
-            <input type="text" class="form-control" id="rate" name="rate" placeholder="Rate">
+            <input type="number" class="form-control" id="rate" name="rate" placeholder="Rate">
           </div>
         </div>
         <div class="col-lg-6">
           <div class="form-group">
             <label for="fuel_money">Fuel (Money)</label>
-            <input type="text" class="form-control" id="fuel_money" name="fuel_money" placeholder="Fuel (Money)">
+            <input type="number" class="form-control" id="fuel_money" name="fuel_money" placeholder="Fuel (Money)">
           </div>
         </div>
       </div>
@@ -111,27 +127,95 @@ $vehicles = $sql->fetchAll();
         <div class="col-lg-6">
           <div class="form-group">
             <label for="fuel_ltr">Fuel (Ltr)</label>
-            <input type="text" class="form-control" id="fuel_ltr" name="fuel_ltr" placeholder="Fuel (Ltr)">
+            <input type="number" class="form-control" id="fuel_ltr" name="fuel_ltr" placeholder="Fuel (Ltr)">
           </div>
         </div>
         <div class="col-lg-6">
           <div class="form-group">
-            <label for="freight">Freight</label>
-            <input type="text" class="form-control" id="freight" name="freight" placeholder="Freight">
+            <label for="fuel_filled_by">Fuel Filled By</label>
+              <select name="fuel_filled_by" class="form-control" id="fuel_filled_by" data-placeholder="Fuel Filled By" style="width: 100%;">
+                  <option></option>
+                  <option value="self">Self</option>
+                  <option value="party">Paying Party</option>
+              </select>
           </div>
         </div>
       </div>
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <label for="booking_party">Booking Party</label>
+                    <select name="booking_party" class="form-control" id="booking_party" data-placeholder="Select a Booking Party" style="width: 100%;">
+                        <option></option>
+                        <?php
+                        for($i=0; $i<count($party_details); $i++)
+                        {
+                            echo '<option value="'.$party_details[$i]['party_id'].'">'.$party_details[$i]['party_name'].'</option>';
+                        }
+                        ?>
+                    </select>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <label for="paying_party">Paying Party</label>
+                    <select name="paying_party" class="form-control" id="paying_party" data-placeholder="Select a Paying Party" style="width: 100%;">
+                        <option></option>
+                        <?php
+                        for($i=0; $i<count($party_details); $i++)
+                        {
+                            echo '<option value="'.$party_details[$i]['party_id'].'">'.$party_details[$i]['party_name'].'</option>';
+                        }
+                        ?>
+                    </select>
+                </div>
+            </div>
+        </div>
       <div class="row">
         <div class="col-lg-6">
           <div class="form-group">
             <label for="km_start">KM (Start)</label>
-            <input type="text" class="form-control" id="km_start" name="km_start" placeholder="KM (Start)">
+            <input type="number" class="form-control" id="km_start" name="km_start" placeholder="KM (Start)">
             <?php
                     echo '<input type="hidden" name="round_trip_id" value="'.$round_trip_id.'">';
              ?>
           </div>
         </div>
+          <div class="col-lg-6">
+              <div class="form-group">
+                  <label for="trip_type">Trip Type</label>
+                  <select name="trip_type" class="form-control" id="trip_type" data-placeholder="Select a Trip Type" style="width: 100%;">
+                      <option></option>
+                      <option value="line">Line</option>
+                      <option value="local">Local</option>
+                  </select>
+              </div>
+          </div>
       </div>
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <label for="freight">Freight</label>
+                    <input type="number" class="form-control" id="freight" name="freight" placeholder="Freight">
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="form-group">
+                    <label for="trip_advance">Trip Advance</label>
+                    <input type="number" class="form-control" id="trip_advance" name="trip_advance" placeholder="Trip Advance">
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="form-group">
+                  <label for="fuel_filled_by">Advance By</label>
+                    <select name="advance_by" class="form-control" id="advance_by" data-placeholder="Advance By" style="width: 100%;">
+                        <option></option>
+                        <option value="self">Self</option>
+                        <option value="party">Paying Party</option>
+                    </select>
+                </div>
+            </div>
+        </div>
     </div>
     <!-- /.card-body -->
     <div class="card-footer">
@@ -143,29 +227,14 @@ $vehicles = $sql->fetchAll();
 <script>
   $(function () {
     $('#vehicle').select2();
+    $('#driver').select2();
+    $('#trip_type').select2();
+    $('#booking_party').select2();
+    $('#paying_party').select2();
+    $('#fuel_filled_by').select2();
+    $('#advance_by').select2();
   })
 
-  $("#fuel_ltr").on("keyup", function() {
-    var fuel_ltr = $("#fuel_ltr").val();
-
-    if(!$.isNumeric(fuel_ltr))
-    {
-      alert("Please Enter Only Integers as Fuel (Ltr)");
-      $("#fuel_ltr").val("0");
-      return;
-    }          
-  });
-
-  $("#fuel_money").on("keyup", function() {
-    var fuel_money = $("#fuel_money").val();
-
-    if(!$.isNumeric(fuel_money))
-    {
-      alert("Please Enter Only Integers as Fuel (Money)");
-      $("#fuel_money").val("0");
-      return;
-    }          
-  });
   //Calculation of Total Freight Start
  $("#rate").on("keyup", function() {
             var rate = $("#rate").val();
