@@ -3,21 +3,21 @@
 $res = '';
 
 $pdo = new PDO($dsn, $user, $pass, $options);
-$sql = $pdo->query("SELECT * FROM `employees`");
+$sql = $pdo->query("SELECT * FROM `manpower`");
 $res = $sql->fetchAll();
 
 ?>
 
 <div class="card">
   <div class="card-header">
-    <h3 class="card-title">Employees</h3>
+    <h3 class="card-title">Man Powers</h3>
   </div>
   <!-- /.card-header -->
   <div class="card-body">
-    <table id="employee-table" class="table table-bordered">
+    <table id="mp-table" class="table table-bordered">
       <thead>                  
         <tr>
-          <th>Employee Name</th>
+          <th>Man Power Name</th>
           <th>Date of Joining</th>
           <th>Brought By</th>
           <th>Role</th>
@@ -29,7 +29,7 @@ $res = $sql->fetchAll();
             for($i=0;$i<count($res);$i++)
             {
                 echo '<tr>';   
-                echo '<td>'.$res[$i]['emp_name'].'</td>'; 
+                echo '<td>'.$res[$i]['mp_name'].'</td>'; 
                 echo '<td>'.$res[$i]['date_of_joining'].'</td>';
                 echo '<td>'.$res[$i]['brought_by'].'</td>'; 
                 echo '<td>'.$res[$i]['role'].'</td>';
@@ -45,7 +45,7 @@ $res = $sql->fetchAll();
 <script>
 
 $(function () {
-  $('#employee-table').DataTable({
+  $('#mp-table').DataTable({
     "responsive": true,
     "autoWidth": false,
   });

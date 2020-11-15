@@ -3,17 +3,17 @@
 <!-- general form elements -->
 <div class="card card-primary">
   <div class="card-header">
-    <h3 class="card-title">New Employee</h3>
+    <h3 class="card-title">New Man Power</h3>
   </div>
   <!-- /.card-header -->
   <!-- form start -->
-  <form role="form" action="/modules/Employees/add_emp_process.php" method="post">
+  <form role="form" action="/modules/Man Powers/add_emp_process.php" method="post">
     <div class="card-body">
       <div class="form-group">
         <div class="row">
           <div class="col-md-6">
-            <label for="emp_full_name">Name of Employee</label>
-            <input type="text" class="form-control" id="emp_full_name" name="emp_full_name" placeholder="Full Name">
+            <label for="emp_full_name">Name of Man Power</label>
+            <input type="text" class="form-control" id="emp_full_name" name="mp_full_name" placeholder="Full Name">
           </div>
           <div class="col-md-6">
             <label for="user_full_name">Brought By</label>

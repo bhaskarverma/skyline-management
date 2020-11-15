@@ -14,7 +14,7 @@ else
   $round_trip_id = "new";
 }
 
-$sql = $pdo->prepare("SELECT * FROM `employees` WHERE `role` = 'DRIVER'");
+$sql = $pdo->prepare("SELECT * FROM `manpower` WHERE `role` = 'DRIVER'");
 $sql->execute();
 $drivers = $sql->fetchAll();
 
