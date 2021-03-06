@@ -7,7 +7,7 @@
   </div>
   <!-- /.card-header -->
   <!-- form start -->
-  <form role="form" action="/modules/Man Powers/add_emp_process.php" method="post">
+  <form role="form" action="/modules/Man Powers/add_mp_process.php" method="post">
     <div class="card-body">
       <div class="form-group">
         <div class="row">
